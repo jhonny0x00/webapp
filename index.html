@@ -1,54 +1,142 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Mini App</title>
+    <title>Patch Constructor</title>
     <script src="telegram-web-app.js"></script>
     <style>
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-hint-color: #999999;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .radio-group {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+            gap: 12px;
         }
-        .btn {
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color);
             border-radius: 8px;
             cursor: pointer;
-            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .radio-label:hover {
+            opacity: 0.8;
+        }
+
+        .radio-input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
 <body>
-    <h1 id="welcome-text">Hello, guest!</h1>
-    <p>This is static page loaded in Telegram Mini App.</p>
-    <button class="btn" id="main-btn">Close application</button>
+
+    <form id="patchForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+            <label class="form-label">Select Browser</label>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="browser" value="Chrome" class="radio-input" checked>
+                    Chrome
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="browser" value="Opera" class="radio-input">
+                    Opera
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="browser" value="Edge" class="radio-input">
+                    Edge
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="browser" value="Vivaldi" class="radio-input">
+                    Vivaldi
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="browser" value="Yandex" class="radio-input">
+                    Yandex
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Generate</button>
+    </form>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
         tg.expand();
 
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('welcome-text').innerText = `Hello, ${user.first_name}!`;
-        } else {
-            document.getElementById('welcome-text').innerText = 'Hello! Open me in Telegram.';
+        if (tg.themeParams) {
+            document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#ffffff');
+            document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+            document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#2481cc');
+            document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
+            document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#999999');
         }
 
-        document.getElementById('main-btn').addEventListener('click', () => {
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            const selectedBrowser = document.querySelector('input[name="browser"]:checked').value;
+            
+            const data = {
+                action: 'generate_patch',
+                browser: selectedBrowser,
+                timestamp: Date.now()
+            };
+
+            tg.sendData(JSON.stringify(data));
             tg.close();
-        });
+        }
     </script>
 </body>
 </html>
